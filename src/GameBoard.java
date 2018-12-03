@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 
@@ -51,14 +53,14 @@ public class GameBoard implements Iterable<Integer> {
         Point n = new Point(x,y);
         if(hasStart()){
             if(n.compareTo(start)==1){
-                if(type==0 || type==2 || type==3)
+                if(type==0 || type==1 || type==3)
                     start=null;
             }
         }
 
         if(hasEnd()){
             if(n.compareTo(end)==1){
-                if(type==0 || type==2 || type==2)
+                if(type==0 || type==1 || type==2)
                     end=null;
             }
         }
@@ -89,12 +91,41 @@ public class GameBoard implements Iterable<Integer> {
         Returns the type of the tile selected or -1 if the tile doesnt exist
          */
 
-        if(x >= x_size || y >= y_size){
+        if(x >= x_size || y >= y_size || x<0 || y<0){
             return -1;
         }
         else{
             return Board[y][x];
         }
+    }
+
+    public List<Point> get_accessible_tiles(Point s){
+        List<Point> al = new ArrayList<>();
+
+        Integer tile = get_tile(s.getX(), s.getY()+1);
+        if(tile!=-1 && tile!=1)
+            al.add(new Point(s.getX(),s.getY()+1));
+
+        tile = get_tile(s.getX(), s.getY()-1);
+        if(tile!=-1 && tile!=1)
+            al.add(new Point(s.getX(),s.getY()-1));
+
+        tile = get_tile(s.getX()+1, s.getY());
+        if(tile!=-1 && tile!=1)
+            al.add(new Point(s.getX()+1,s.getY()));
+
+        tile = get_tile(s.getX()-1, s.getY());
+        if(tile!=-1 && tile!=1)
+            al.add(new Point(s.getX()-1,s.getY()));
+        return al;
+
+    }
+
+    public int get_distance(Point a, Point b){
+        /*
+        Simple euclidean distance between the two points
+         */
+        return Math.abs(b.getX() - a.getX()) + Math.abs(b.getY() - a.getY());
     }
 
     public Iterator<Integer> iterator(){

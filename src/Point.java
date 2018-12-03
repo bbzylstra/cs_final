@@ -22,6 +22,7 @@ public class Point implements Comparable<Point>{
     public void setY(Integer Y){
         y = Y;
     }
+
     public int compareTo(Point o){
         if(o.x.equals(x) && o.y.equals(y)){
             return 1;
@@ -29,5 +30,12 @@ public class Point implements Comparable<Point>{
         else{
             return 0;
         }
+    }
+    public boolean equals(Object o){
+        return (this.compareTo((Point) o)==1);
+    }
+    @Override
+    public int hashCode(){
+        return x*200 + y;
     }
 }

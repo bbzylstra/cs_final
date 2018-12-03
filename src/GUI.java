@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.*;
+import java.util.List;
 
 
 public class GUI extends JFrame implements ActionListener {
@@ -13,8 +14,8 @@ public class GUI extends JFrame implements ActionListener {
     public static final int CANVAS_WIDTH = 640;
     public static final int CANVAS_HEIGHT = 480;
     public GUI(){
-        int x =5;
-        int y =8;
+        int x =15;
+        int y =15;
         GameBoard game = new GameBoard(x,y);
         canvas = new DrawGraph(game);
         setLayout(new FlowLayout());
@@ -34,6 +35,37 @@ public class GUI extends JFrame implements ActionListener {
         panel.add(new Checkbox("Start Tile", cbg, false));
         panel.add(new Checkbox("End Tile", cbg, false));
         panel.add(new Checkbox("Clear Tile", cbg, false));
+        Button runB = new Button("Run!");
+        runB.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                AStar solver = new AStar(game);
+                List<Point> solvedList = solver.solve();
+                for(int i=1;i<solvedList.size();i++){
+                    game.set_tile(solvedList.get(i).getX(), solvedList.get(i).getY(), 4);
+                }
+                canvas.update_board(game);
+                canvas.repaint();
+            }
+        });
+        panel.add(runB);
+
+        Button clearS = new Button("Clear");
+        clearS.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                for(int i=0;i<game.getY_size();i++){
+                    for(int j=0;j<game.getX_size();j++){
+                        if(game.get_tile(j,i)==4){
+                            game.set_tile(j,i,0);
+                        }
+                    }
+                }
+                canvas.update_board(game);
+                canvas.repaint();
+            }
+        });
+        panel.add(clearS);
         //Display the window.
         addMouseListener(new MouseListener() {
             @Override
@@ -131,10 +163,20 @@ public class GUI extends JFrame implements ActionListener {
                     else if(gameb.get_tile(x_lim,y_lim)==2) {
                         g.setColor(Color.GREEN);
                         g.fillRect(10 + width * x_lim, 10 + height * y_lim, width, height);
+                        g.setColor(Color.BLACK);
+                        g.drawRect(10 + width * x_lim, 10 + height * y_lim, width, height);
                     }
                     else if(gameb.get_tile(x_lim,y_lim)==3) {
                         g.setColor(Color.RED);
                         g.fillRect(10 + width * x_lim, 10 + height * y_lim, width, height);
+                        g.setColor(Color.BLACK);
+                        g.drawRect(10 + width * x_lim, 10 + height * y_lim, width, height);
+                    }
+                    else if(gameb.get_tile(x_lim,y_lim)==4) {
+                        g.setColor(Color.BLUE);
+                        g.fillRect(10 + width * x_lim, 10 + height * y_lim, width, height);
+                        g.setColor(Color.BLACK);
+                        g.drawRect(10 + width * x_lim, 10 + height * y_lim, width, height);
                     }
                 }
             }
