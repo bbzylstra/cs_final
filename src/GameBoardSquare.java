@@ -5,14 +5,14 @@ import java.util.NoSuchElementException;
 
 
 
-public class GameBoard implements Iterable<Integer> {
+public class GameBoardSquare implements Iterable<Integer> {
 
     private Integer [][] Board;
     private int x_size;
     private int y_size;
     private Point start;
     private Point end;
-    GameBoard(int x, int y){
+    GameBoardSquare(int x, int y){
         x_size = x;
         y_size = y;
         Board = new Integer[y][x];

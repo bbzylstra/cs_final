@@ -3,9 +3,9 @@ import java.util.List;
 
 public class AStar {
 
-    private GameBoard game;
+    private GameBoardSquare game;
 
-    AStar(GameBoard g){
+    AStar(GameBoardSquare g){
         game = g;
     }
 

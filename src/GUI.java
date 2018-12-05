@@ -1,5 +1,3 @@
-import sun.java2d.loops.DrawRect;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,14 +8,16 @@ import java.util.List;
 
 
 public class GUI extends JFrame implements ActionListener {
-    private DrawGraph canvas;
+    private DrawGraphSquare canvas;
     public static final int CANVAS_WIDTH = 640;
     public static final int CANVAS_HEIGHT = 480;
     public GUI(){
         int x =15;
         int y =15;
-        GameBoard game = new GameBoard(x,y);
-        canvas = new DrawGraph(game);
+        GameBoardSquare game = new GameBoardSquare(x,y);
+        GameBoardHex g_h = new GameBoardHex(1,1);
+        canvas = new DrawGraphSquare(game);
+        canvas = new DrawGraphHex(g_h);
         setLayout(new FlowLayout());
         canvas.setPreferredSize(new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -122,13 +122,13 @@ public class GUI extends JFrame implements ActionListener {
 
 
 
-    private class DrawGraph extends JPanel{
+    private class DrawGraphSquare extends JPanel{
 
         private int x;
         private int y;
         private int [][] rects;
-        private GameBoard gameb;
-        public DrawGraph(GameBoard game){
+        private GameBoardSquare gameb;
+        public DrawGraphSquare(GameBoardSquare game){
             gameb = game;
             x = gameb.getX_size();
             y = gameb.getY_size();
@@ -197,7 +197,7 @@ public class GUI extends JFrame implements ActionListener {
 
         }
 
-        public void update_board(GameBoard g){
+        public void update_board(GameBoardSquare g){
             gameb = g;
         }
 
@@ -220,6 +220,42 @@ public class GUI extends JFrame implements ActionListener {
             newDrawGrid(g);
 
         }
+    }
+
+
+    private class DrawGraphHex extends DrawGraphSquare{
+
+        private GameBoardHex gameb;
+        private int x;
+        private int y;
+
+        DrawGraphHex(GameBoardHex game){
+            super(game);
+            gameb = game;
+            x = gameb.getX_size();
+            y = gameb.getY_size();
+
+
+        }
+
+        @Override
+        public void newDrawGrid(Graphics g){
+            Graphics2D g2 = (Graphics2D) g;
+            int[] x_p = {10,20,25,20,10,5};
+            int[] y_p = {10,10,20,30,30,20};
+            Shape polygon = new Polygon(x_p,y_p,6);
+            g2.draw(polygon);
+
+            /*
+            int height = (CANVAS_HEIGHT-20)/y;
+            int width = (CANVAS_WIDTH-20)/x;
+            for(int y_lim=0;y_lim<y;y_lim++){
+                for(int x_lim=0;x_lim<x;x_lim++){
+
+                }
+            */
+        }
+
     }
 
 
