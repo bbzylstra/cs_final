@@ -16,25 +16,107 @@ public class GUI extends JFrame implements ActionListener {
     public CheckboxGroup cbg;
     private GameBoardSquare game;
     private GameBoardHex g_h;
+    int x;
+    int y;
     public GUI(){
-        int x =8;
-        int y =8;
+        x =8;
+        y =8;
         game = new GameBoardSquare(x,y);
         g_h = new GameBoardHex(x,y);
         canvas = new DrawGraphSquare(game);
-        canvas = new DrawGraphHex(g_h);
         setLayout(new FlowLayout());
         canvas.setPreferredSize(new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Container cp = getContentPane();
         //Add the ubiquitous "Hello World" label.
 
-        cp.add(canvas);
+
 
         JPanel panel = new JPanel();
         add(panel);
+
+        JPanel panel2 = new JPanel();
+        panel.add(panel2);
+
         panel.setBounds(61, 11, 81, 140);
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        TextField x_in, y_in;
+        x_in = new TextField("8", 3);
+        y_in = new TextField("8", 3);
+
+
+        String[] comboStrings = {"Square Tiles", "Hex Tiles"};
+
+        JComboBox tileBox = new JComboBox(comboStrings);
+        tileBox.setSelectedIndex(0);
+
+        tileBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JComboBox cb = (JComboBox)e.getSource();
+                String comboName = (String)cb.getSelectedItem();
+                if(comboName.equals(comboStrings[0])){
+                    game = new GameBoardSquare(x,y);
+                    cp.remove(canvas);
+                    canvas = new DrawGraphSquare(game);
+                    canvas.setPreferredSize(new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT));
+                    cp.add(canvas);
+                    canvas.update_board(game);
+                    canvas.repaint();
+                    cp.validate();
+
+                }
+                else{
+                    g_h = new GameBoardHex(x,y);
+                    cp.remove(canvas);
+                    canvas = new DrawGraphHex(g_h);
+                    canvas.setPreferredSize(new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT));
+                    cp.add(canvas);
+                    canvas.update_board(g_h);
+                    canvas.validate();
+                    cp.validate();
+                }
+
+
+            }
+        });
+        panel2.add(x_in);
+        panel2.add(y_in);
+
+        Button set_size = new Button("Change Dimensions");
+        set_size.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!(canvas instanceof DrawGraphHex)) {
+                    x = Integer.valueOf(x_in.getText());
+                    y = Integer.valueOf(y_in.getText());
+
+                    game = new GameBoardSquare(x,y);
+                    cp.remove(canvas);
+                    canvas = new DrawGraphSquare(game);
+                    canvas.setPreferredSize(new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT));
+                    cp.add(canvas);
+                    canvas.update_board(game);
+                    canvas.repaint();
+                    cp.validate();
+                }
+
+                else{
+                    x = Integer.valueOf(x_in.getText());
+                    y = Integer.valueOf(y_in.getText());
+                    g_h = new GameBoardHex(x,y);
+                    cp.remove(canvas);
+                    canvas = new DrawGraphHex(g_h);
+                    canvas.setPreferredSize(new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT));
+                    cp.add(canvas);
+                    canvas.update_board(g_h);
+                    canvas.validate();
+                    cp.validate();
+                }
+            }
+        });
+        panel2.add(set_size);
+        panel.add(tileBox);
         cbg = new CheckboxGroup();
         panel.add(new Checkbox("Block Tile", cbg, true));
         panel.add(new Checkbox("Start Tile", cbg, false));
@@ -59,6 +141,7 @@ public class GUI extends JFrame implements ActionListener {
                     for (int i = 1; i < solvedList.size(); i++) {
                         g_h.set_tile(solvedList.get(i).getX(), solvedList.get(i).getY(), 4);
                     }
+
                     canvas.update_board(g_h);
                     canvas.repaint();
                 }
@@ -70,18 +153,32 @@ public class GUI extends JFrame implements ActionListener {
         clearS.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                for(int i=0;i<game.getY_size();i++){
-                    for(int j=0;j<game.getX_size();j++){
-                        if(game.get_tile(j,i)==4){
-                            game.set_tile(j,i,0);
+                if (!(canvas instanceof DrawGraphHex)) {
+                    for (int i = 0; i < game.getY_size(); i++) {
+                        for (int j = 0; j < game.getX_size(); j++) {
+                            if (game.get_tile(j, i) == 4) {
+                                game.set_tile(j, i, 0);
+                            }
                         }
                     }
+                    canvas.update_board(game);
+                    canvas.repaint();
                 }
-                canvas.update_board(game);
-                canvas.repaint();
+                else{
+                    for (int i = 0; i < g_h.getY_size(); i++) {
+                        for (int j = 0; j < g_h.getX_size(); j++) {
+                            if (g_h.get_tile(j, i) == 4) {
+                                g_h.set_tile(j, i, 0);
+                            }
+                        }
+                    }
+                    canvas.update_board(g_h);
+                    canvas.repaint();
+                }
             }
         });
         panel.add(clearS);
+        cp.add(canvas);
         //Display the window.
         pack();
         setVisible(true);
@@ -304,7 +401,7 @@ public class GUI extends JFrame implements ActionListener {
             int[] x_p = new int[6];
             int[] y_p = new int[6];
             int height = (CANVAS_HEIGHT)/(y+2);
-            int width = (CANVAS_WIDTH)/(x+2);
+            int width = (CANVAS_WIDTH)/(x);
             int offset_w = width/4;
             int offset_h = height/2;
 

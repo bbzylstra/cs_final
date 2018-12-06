@@ -19,7 +19,7 @@ public class AStar {
 
         List<Point> checked_list = new ArrayList<>();
         boolean found = false;
-        Heap pointQ = new Heap(game.getX_size() * game.getY_size());
+        Heap pointQ = new Heap(game.getX_size() * game.getY_size()*game.getX_size());
         Node startN = new Node(game.get_distance(start, end), null, start);
         Node nNode = startN;
         pointQ.insert(startN);
