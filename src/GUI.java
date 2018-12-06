@@ -4,6 +4,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.*;
+import java.awt.geom.Area;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -11,11 +13,14 @@ public class GUI extends JFrame implements ActionListener {
     private DrawGraphSquare canvas;
     public static final int CANVAS_WIDTH = 640;
     public static final int CANVAS_HEIGHT = 480;
+    public CheckboxGroup cbg;
+    private GameBoardSquare game;
+    private GameBoardHex g_h;
     public GUI(){
-        int x =15;
-        int y =15;
-        GameBoardSquare game = new GameBoardSquare(x,y);
-        GameBoardHex g_h = new GameBoardHex(1,1);
+        int x =8;
+        int y =8;
+        game = new GameBoardSquare(x,y);
+        g_h = new GameBoardHex(x,y);
         canvas = new DrawGraphSquare(game);
         canvas = new DrawGraphHex(g_h);
         setLayout(new FlowLayout());
@@ -30,7 +35,7 @@ public class GUI extends JFrame implements ActionListener {
         add(panel);
         panel.setBounds(61, 11, 81, 140);
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        CheckboxGroup cbg = new CheckboxGroup();
+        cbg = new CheckboxGroup();
         panel.add(new Checkbox("Block Tile", cbg, true));
         panel.add(new Checkbox("Start Tile", cbg, false));
         panel.add(new Checkbox("End Tile", cbg, false));
@@ -67,50 +72,6 @@ public class GUI extends JFrame implements ActionListener {
         });
         panel.add(clearS);
         //Display the window.
-        addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int x_pos = e.getX();
-                int y_pos = e.getY();
-                int x_click=-1;
-                int y_click=-1;
-                if(x_pos < CANVAS_WIDTH-10 && x_pos>10 && y_pos <CANVAS_HEIGHT-10 && y_pos>10){
-                    x_click= (int)Math.floor(e.getX()*x/(CANVAS_WIDTH-10));
-                    y_click=(int)Math.floor(e.getY()*y/(CANVAS_HEIGHT-10));
-                    Checkbox selected = cbg.getSelectedCheckbox();
-                    if(selected.getLabel().compareTo("Block Tile")==0)
-                        game.set_tile(x_click, y_click, 1);
-                    else if (selected.getLabel().compareTo("Start Tile")==0)
-                        game.set_tile(x_click, y_click, 2);
-                    else if (selected.getLabel().compareTo("End Tile")==0)
-                        game.set_tile(x_click, y_click, 3);
-                    else
-                        game.set_tile(x_click, y_click, 0);
-                    canvas.update_board(game);
-                    canvas.repaint();
-
-
-                }
-
-                System.out.println(x_click+","+y_click);//these co-ords are relative to the component
-            }
-            @Override
-            public void mousePressed(MouseEvent e){
-
-            }
-            @Override
-            public void mouseReleased(MouseEvent e){
-
-            }
-            @Override
-            public void mouseEntered(MouseEvent e){
-
-            }
-            @Override
-            public void mouseExited(MouseEvent e){
-
-            }
-        });
         pack();
         setVisible(true);
     }
@@ -128,6 +89,21 @@ public class GUI extends JFrame implements ActionListener {
         private int y;
         private int [][] rects;
         private GameBoardSquare gameb;
+        public List<Area> Shapes;
+
+        public boolean contains(java.awt.Point test, java.awt.Point[] points){
+            int i;
+            int j;
+            boolean result = false;
+            for (i = 0, j = points.length - 1; i < points.length; j = i++) {
+                if ((points[i].y > test.y) != (points[j].y > test.y) &&
+                        (test.x < (points[j].x - points[i].x) * (test.y - points[i].y) / (points[j].y-points[i].y) + points[i].x)) {
+                    result = !result;
+                }
+            }
+            return result;
+
+        }
         public DrawGraphSquare(GameBoardSquare game){
             gameb = game;
             x = gameb.getX_size();
@@ -147,7 +123,9 @@ public class GUI extends JFrame implements ActionListener {
             }
         }
 
-        public void newDrawGrid(Graphics g){
+        public List<Area> newDrawGrid(Graphics g){
+
+            List<Area> ShapeList = new ArrayList<>();
             int height = (CANVAS_HEIGHT-20)/y;
             int width = (CANVAS_WIDTH-20)/x;
             for(int y_lim=0;y_lim<y;y_lim++){
@@ -180,6 +158,7 @@ public class GUI extends JFrame implements ActionListener {
                     }
                 }
             }
+            return ShapeList;
 
         }
 
@@ -217,7 +196,7 @@ public class GUI extends JFrame implements ActionListener {
         @Override
         public void paintComponent(Graphics g){
             super.paintComponent(g);
-            newDrawGrid(g);
+            Shapes = newDrawGrid(g);
 
         }
     }
@@ -234,27 +213,169 @@ public class GUI extends JFrame implements ActionListener {
             gameb = game;
             x = gameb.getX_size();
             y = gameb.getY_size();
+            addMouseListener(new MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    int x_pos = e.getX();
+                    int y_pos = e.getY();
+                    int x_click=-1;
+                    int y_click=-1;
+                    if(!(canvas instanceof DrawGraphHex)) {
+                        if (x_pos < CANVAS_WIDTH - 10 && x_pos > 10 && y_pos < CANVAS_HEIGHT - 10 && y_pos > 10) {
+                            x_click = (int) Math.floor(e.getX() * x / (CANVAS_WIDTH - 10));
+                            y_click = (int) Math.floor(e.getY() * y / (CANVAS_HEIGHT - 10));
+                            Checkbox selected = cbg.getSelectedCheckbox();
+                            if (selected.getLabel().compareTo("Block Tile") == 0)
+                                game.set_tile(x_click, y_click, 1);
+                            else if (selected.getLabel().compareTo("Start Tile") == 0)
+                                game.set_tile(x_click, y_click, 2);
+                            else if (selected.getLabel().compareTo("End Tile") == 0)
+                                game.set_tile(x_click, y_click, 3);
+                            else
+                                game.set_tile(x_click, y_click, 0);
+                            canvas.update_board(game);
+                            canvas.repaint();
+                        }
+                    }
+                    else {
+                        List<Area> shapeL = canvas.Shapes;
+                        for(int i =0;i<shapeL.size();i++){
+                            if(shapeL.get(i).contains(e.getPoint())){
+                                x_click = i % (x/2) + i/x/2;
+                                y_click = (int) Math.floor(i/x/2);
+                                System.out.println(x_click +", " + y_click + ", " +i);
+                                System.out.println(e.getX() + ", " + e.getY());
+
+                                Checkbox selected = cbg.getSelectedCheckbox();
+                                if (selected.getLabel().compareTo("Block Tile") == 0)
+                                    g_h.set_tile(x_click, y_click, 1);
+                                else if (selected.getLabel().compareTo("Start Tile") == 0)
+                                    g_h.set_tile(x_click, y_click, 2);
+                                else if (selected.getLabel().compareTo("End Tile") == 0)
+                                    g_h.set_tile(x_click, y_click, 3);
+                                else
+                                    g_h.set_tile(x_click, y_click, 0);
+                                canvas.update_board(g_h);
+                                canvas.repaint();
+                            }
+                        }
+
+
+
+                    }
+                }
+                @Override
+                public void mousePressed(MouseEvent e){
+
+                }
+                @Override
+                public void mouseReleased(MouseEvent e){
+
+                }
+                @Override
+                public void mouseEntered(MouseEvent e){
+
+                }
+                @Override
+                public void mouseExited(MouseEvent e){
+
+                }
+            });
 
 
         }
 
         @Override
-        public void newDrawGrid(Graphics g){
+        public List<Area> newDrawGrid(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
-            int[] x_p = {10,20,25,20,10,5};
-            int[] y_p = {10,10,20,30,30,20};
-            Shape polygon = new Polygon(x_p,y_p,6);
-            g2.draw(polygon);
+            List<Area> HexList = new ArrayList<>();
 
-            /*
-            int height = (CANVAS_HEIGHT-20)/y;
-            int width = (CANVAS_WIDTH-20)/x;
-            for(int y_lim=0;y_lim<y;y_lim++){
-                for(int x_lim=0;x_lim<x;x_lim++){
+            int[] x_p = new int[6];
+            int[] y_p = new int[6];
+            int height = (CANVAS_HEIGHT)/(y+2);
+            int width = (CANVAS_WIDTH)/(x);
+            int offset_w = width/4;
+            int offset_h = height/2;
 
+            if(Shapes == null) {
+                for (int y_lim = 0; y_lim < 2*y; y_lim ++) {
+                    int int_xp = 10;
+                    int int_yp = offset_h * y_lim + 10;
+                    if (y_lim % 2 == 1) {
+                        int_xp += width - offset_w;
+
+                    }
+
+                    for (int x_lim = 0; x_lim < x/2; x_lim++) {
+                        x_p[0] = (int_xp + offset_w);
+                        y_p[0] = int_yp;
+
+                        x_p[1] = (int_xp + offset_w * 3);
+                        y_p[1] = int_yp;
+
+                        x_p[2] = (int_xp + offset_w * 4);
+                        y_p[2] = int_yp + offset_h;
+
+                        x_p[3] = (int_xp + offset_w * 3);
+                        y_p[3] = int_yp + height;
+
+                        x_p[4] = (int_xp + offset_w);
+                        y_p[4] = int_yp + height;
+
+                        x_p[5] = (int_xp);
+                        y_p[5] = int_yp + offset_h;
+
+                        Polygon polygon = new Polygon(x_p, y_p, 6);
+                        Area a = new Area(polygon);
+                        g2.draw(a);
+                        HexList.add(a);
+                        int_xp += width+2*offset_w;
+                    }
                 }
-            */
+                return HexList;
+            }
+            else{
+                for(int y_lim=0;y_lim<2*y;y_lim++){
+                    for(int x_lim=0;x_lim<x/2;x_lim++){
+                        Area poly = Shapes.get(y_lim*(x/2) + x_lim);
+                        if(gameb.get_tile(x_lim,y_lim)==0) {
+                            g2.setColor(Color.WHITE);
+                            g2.fill(poly);
+                            g2.setColor(Color.BLACK);
+                            g2.draw(poly);
+                        }
+                        else if(gameb.get_tile(x_lim,y_lim)==1) {
+                            g2.setColor(Color.BLACK);
+                            g2.fill(poly);
+                        }
+                        else if(gameb.get_tile(x_lim,y_lim)==2) {
+                            g2.setColor(Color.GREEN);
+                            g2.fill(poly);
+                            g2.setColor(Color.BLACK);
+                            g2.draw(poly);
+                        }
+                        else if(gameb.get_tile(x_lim,y_lim)==3) {
+                            g2.setColor(Color.RED);
+                            g2.fill(poly);
+                            g2.setColor(Color.BLACK);
+                            g2.draw(poly);
+                        }
+                        else if(gameb.get_tile(x_lim,y_lim)==4) {
+                            g2.setColor(Color.BLUE);
+                            g2.fill(poly);
+                            g2.setColor(Color.BLACK);
+                            g2.draw(poly);
+                        }
+
+                    }
+                }
+                return Shapes;
+            }
+
+
         }
+
+
 
     }
 
